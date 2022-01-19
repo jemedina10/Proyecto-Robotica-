@@ -1,0 +1,70 @@
+#Type help("robolink") or help("robodk") for more information
+# Press F5 to run the script
+# Note: you do not need to keep a copy of this file, your python script is saved with the station
+from robolink import *    # API to communicate with RoboDK
+from robodk import *      # basic matrix operations
+
+# Use RoboDK API as RL
+RDK = Robolink()
+
+# define default approach distance
+#APPROACH = 100
+
+# gather robot, tool and reference frames from the station
+pieza= RDK.Item('Part 1', ITEM_TYPE_OBJECT)
+pieza2= RDK.Item('Part 2', ITEM_TYPE_OBJECT)
+robot = RDK.Item('Fanuc M-10iA/8L', ITEM_TYPE_ROBOT)
+tool = RDK.Item('Paint gun', ITEM_TYPE_TOOL)
+
+#frame_palletpin = RDK.Item('Frame 6', ITEM_TYPE_FRAME)
+#frame_pallet2 = RDK.Item('Estacion2', ITEM_TYPE_FRAME)
+COLOR_CILINDRO = RDK.getParam('ColorCilindro')
+COLOR_CILINDRO_RGB = int(COLOR_CILINDRO)
+ColorRGB=[]
+if COLOR_CILINDRO_RGB == 1:  #Amarillo
+    ColorRGB=[1,1,0,1]
+if COLOR_CILINDRO_RGB == 2:  #Azul
+    ColorRGB=[0,0,1,1]
+if COLOR_CILINDRO_RGB == 3: #Rojo
+    ColorRGB=[1,0,0,1]
+if COLOR_CILINDRO_RGB == 4: #Verde
+    ColorRGB=[0,128/255,0,1]
+
+target_AproxPin = RDK.Item('AproxPin', ITEM_TYPE_TARGET)
+target_IzqU1 = RDK.Item('IzqU1', ITEM_TYPE_TARGET)
+target_IzqU2 = RDK.Item('IzqU2', ITEM_TYPE_TARGET)
+target_Sup1 = RDK.Item('Sup1', ITEM_TYPE_TARGET)
+target_Sup2 = RDK.Item('Sup2', ITEM_TYPE_TARGET)
+target_DerU1 = RDK.Item('DerU1', ITEM_TYPE_TARGET)
+target_DerU2 = RDK.Item('DerU2', ITEM_TYPE_TARGET)
+target_IzqB1 = RDK.Item('IzqB1', ITEM_TYPE_TARGET)
+target_IzqB2 = RDK.Item('IzqB2', ITEM_TYPE_TARGET)
+target_AtrasB1 = RDK.Item('AtrasB1', ITEM_TYPE_TARGET)
+target_AtrasB2 = RDK.Item('AtrasB2', ITEM_TYPE_TARGET)
+target_IzqC1 = RDK.Item('IzqC1', ITEM_TYPE_TARGET)
+target_IzqC2 = RDK.Item('IzqC2', ITEM_TYPE_TARGET)
+target_FrentC1 = RDK.Item('FrentC1', ITEM_TYPE_TARGET)
+target_FrentC2 = RDK.Item('FrentC2', ITEM_TYPE_TARGET)
+
+
+#robot.setPoseFrame(frame_palletpin)
+robot.MoveJ(target_AproxPin)
+robot.MoveJ(target_IzqU1)
+robot.MoveL(target_IzqU2)
+robot.MoveL(target_Sup1)
+robot.MoveL(target_Sup2)
+robot.MoveL(target_DerU1)
+robot.MoveL(target_DerU2)
+robot.MoveJ(target_IzqB1)
+robot.MoveL(target_IzqB2)
+robot.MoveL(target_AtrasB1)
+robot.MoveL(target_AtrasB2)
+robot.MoveL(target_IzqC1)
+robot.MoveL(target_IzqC2)
+robot.MoveL(target_FrentC1)
+robot.MoveL(target_FrentC2)
+
+robot.setSpeed(100)
+RDK.Spray_Clear()
+pieza.Recolor(ColorRGB)
+#pieza2.Recolor(ColorRGB)
