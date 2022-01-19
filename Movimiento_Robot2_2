@@ -1,0 +1,83 @@
+# Type help("robolink") or help("robodk") for more information
+# Press F5 to run the script
+# Note: you do not need to keep a copy of this file, your python script is saved with the station
+from robolink import *    # API to communicate with RoboDK
+from robodk import *      # basic matrix operations
+
+# Use RoboDK API as RL
+RDK = Robolink()
+
+# define default approach distance
+#APPROACH = 100
+
+# gather robot, tool and reference frames from the station
+robot = RDK.Item('Fanuc M-16iB/20', ITEM_TYPE_ROBOT)
+tool = RDK.Item('RobotiQ EPick Four Vacuum Cup', ITEM_TYPE_TOOL)
+#obj = RDK.Item('box', ITEM_TYPE_OBJECT)
+frame_pallet = RDK.Item('Est1', ITEM_TYPE_FRAME)
+frame_pallet2 = RDK.Item('Est2', ITEM_TYPE_FRAME)
+
+
+# gather targets
+target_aprox = RDK.Item('Paprox', ITEM_TYPE_TARGET)
+target_aprox2 = RDK.Item('Paproxm2', ITEM_TYPE_TARGET)
+target_final = RDK.Item('Pfinal2', ITEM_TYPE_TARGET)
+target_inicial = RDK.Item('P2Inicial', ITEM_TYPE_TARGET)
+
+
+ 
+
+def TCP_On(toolitem):
+    """Attaches the closest object to the toolitem Htool pose,
+    It will also output appropriate function calls on the generated robot program (call to TCP_On)"""
+    toolitem.AttachClosest()
+    toolitem.RDK().RunMessage('Set air valve on')
+    toolitem.RDK().RunProgram('TCP_On()')
+        
+def TCP_Off(toolitem, itemleave=0):
+    """Detaches the closest object attached to the toolitem Htool pose,
+    It will also output appropriate function calls on the generated robot program (call to TCP_Off)"""
+    toolitem.DetachAll(itemleave)
+    toolitem.RDK().RunMessage('Set air valve off')
+    toolitem.RDK().RunProgram('TCP_Off()')
+
+
+# ---------------------------------------------------------------------------------
+# -------------------------- PROGRAM START ----------------------------------------
+
+tool_xyzrpw = tool.PoseTool()*transl(0,0,50)
+tool_tcp = robot.AddTool(tool_xyzrpw, 'TCP C')
+
+robot.setPoseTool(tool_tcp)
+
+robot.setPoseFrame(frame_pallet)
+robot.MoveJ(target_aprox)
+TCP_On(tool)
+robot.MoveL(target_inicial)
+#obj.setParentStatic(tool)
+TCP_On(tool)
+robot.MoveJ(target_aprox)
+#TCP_On(tool)
+robot.setPoseFrame(frame_pallet2)
+robot.MoveL(target_aprox2)
+robot.MoveL(target_final)
+#robot.MoveJ(target_inicial)
+TCP_Off(tool, frame_pallet2)
+robot.MoveJ(target_aprox2)
+robot.setPoseFrame(frame_pallet)
+robot.MoveL(target_aprox)
+
+
+def cleanup(objects, startswith="Part "):
+    """Deletes all objects where the name starts with "startswith", from the provided list of objects."""    
+    for item in objects:
+        if item.Name().startswith(startswith):
+            item.Delete()
+
+# turn off rendering (much faster when setting up the station)
+RDK.Render(False)
+
+# cleanup previous simulation (generated parts and tools)
+
+all_tools = RDK.ItemList(ITEM_TYPE_TOOL, False)
+cleanup(all_tools, 'TCP ')
